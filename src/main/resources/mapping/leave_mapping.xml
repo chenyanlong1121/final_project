@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fhh.final_project.mapper.LeaveMapper">
+    <resultMap id="courseResultMap" type="com.fhh.final_project.entity.Course">
+        <!-- courseid| coursename| courseteacherno | courseclassroom  | coursestart | courselength | courseweekday | courseterm -->
+        <result column="courseno" jdbcType="VARCHAR" property="no"/>
+        <result column="coursename" jdbcType="VARCHAR" property="name"/>
+        <result column="courseteacherno" jdbcType="VARCHAR" property="teacherno"/>
+        <result column="courseclassroom" jdbcType="VARCHAR" property="classroom"/>
+        <result column="coursestart" jdbcType="INTEGER" property="start"/>
+        <result column="courselength" jdbcType="INTEGER" property="length"/>
+        <result column="courseweekday" jdbcType="INTEGER" property="weekday"/>
+        <result column="courseterm" jdbcType="VARCHAR" property="term"/>
+    </resultMap>
+    <resultMap id="stuLeaveResultMap" type="com.fhh.final_project.entity.StuLeave">
+        <result column="leaveuuid" jdbcType="VARCHAR" property="leaveuuid" />
+        <result column="leavestuno" jdbcType="VARCHAR" property="leavestuno" />
+        <result column="leavebegintime" jdbcType="VARCHAR" property="leavebegintime" />
+        <result column="leaveendtime" jdbcType="VARCHAR" property="leaveendtime" />
+        <result column="leavestate" jdbcType="TINYINT" property="leavestate" />
+        <result column="leavereason" jdbcType="VARCHAR" property="leavereason" />
+        <result column="leavetype" jdbcType="TINYINT" property="leavetype" />
+    </resultMap>
+    <insert id="addLeave">
+        insert into stu_leaves values(
+            #{uuid},#{leavestuno},#{leavebegintime},#{leaveendtime},
+            #{leavestate},#{leavereason},#{leavetype});
+    </insert>
+    <insert id="insertLeaves">
+        insert into leaves values
+        <foreach collection="leaves" item="leave" index="index" separator=",">
+            (#{leave.uuid},#{leave.courseid},#{leave.coursedate},0)
+        </foreach>
+    </insert>
+    <delete id="deleteLeavePerm">
+        delete from leaves where leaveuuid=#{leaveuuid};
+        delete from stu_leaves where leaveuuid=#{leaveuuid}
+    </delete>
+
+    <delete id="clearDelete">
+        delete from leaves as l,stu_leaves as sl where l.leaveuuid = sl.leaveuuid and sl.leavestuno = #{stuno};
+        delete from stu_leaves where leavestuno = #{stuno}
+    </delete>
+    <select id="getLeaveTitleByName" resultType="com.fhh.final_project.entity.StuLeave">
+        select leaveuuid,leavebegintime,leaveendtime,leavereason,leavestate from stu_leaves
+        where leavestuno=#{stuno} and leavestate&amp;#{filter}=#{result}
+        limit #{pageno},20;
+    </select>
+    <select id="getLeaveTitleByInstructorNo" resultType="com.fhh.final_project.entity.StuLeave">
+        select sl.leaveuuid,sl.leavebegintime,sl.leaveendtime,sl.leavereason,sl.leavestate,s.stuname from stu_leaves as sl,student as s
+        where s.stuno = sl.leavestuno and sl.leavestate&amp;#{filter}=#{result}
+        and s.stuinstructor = #{instructorno} limit #{pageno},20
+    </select>
+
+    <!--String leaveuuid, String leavestuno, String leavebegintime, String leaveendtime, int leavestate, String leavereason,int leavetype-->
+    <select id="getFullLeaveByUuid" resultType="com.fhh.final_project.entity.StuLeave">
+        select leaveuuid,leavestuno,leavebegintime,leaveendtime,leavestate,leavereason,leavetype from stu_leaves
+        where leaveuuid=#{leaveuuid}
+    </select>
+    <select id="getLeaveCoursesByUuid" resultType="com.fhh.final_project.entity.Leave">
+        select distinct c.coursename as coursename,l.* from courses as c,leaves as l
+        where l.leaveuuid=#{leaveuuid} and c.courseid = l.courseid
+    </select>
+    <update id="triggerDeleteMarkerByUuid">
+        update stu_leaves
+        set leavestate=(leavestate&amp;254) + if((leavestate&amp;1),0,1)
+        where leaveuuid=#{leaveuuid}
+    </update>
+    <update id="triggerArchiveMarkerByUuid">
+        update stu_leaves
+        set leavestate=(leavestate&amp;127) + if((leavestate&amp;128),0,128)
+        where leaveuuid=#{leaveuuid}
+    </update>
+    <select id="getTotalCountByCondition" resultType="java.lang.Integer">
+        select count(distinct sl.leaveuuid) from ${source}
+        where ${whereclause}
+    </select>
+    <select id="getLeavesByGenericConditions" resultType="com.fhh.final_project.entity.StuLeave">
+        select distinct sl.leaveuuid,sl.leavestuno,sl.leavebegintime,sl.leaveendtime,sl.leavestate,sl.leavereason,sl.leavetype from ${source}
+        where ${whereclause}
+        limit #{page},12
+    </select>
+    <select id="getLeaveTitleByTeacherNo" resultType="com.fhh.final_project.entity.StuLeave">
+        select distinct sl.*,s.stuname,l.readstate as teacherreadstate
+        from stu_leaves as sl,leaves as l,courses as c,student as s
+        where l.leaveuuid = sl.leaveuuid and l.courseid=c.courseid
+        and c.courseteacherno=#{teacherno} and sl.leavestate&amp;#{filter}=#{result}
+        and sl.leavestuno = s.stuno
+        limit #{pageno},20
+    </select>
+    <select id="getWaitingLeaveTitleByTeacherNo" resultType="com.fhh.final_project.entity.StuLeave">
+        select distinct sl.*,s.stuname,l.readstate as teacherreadstate
+        from stu_leaves as sl,leaves as l,courses as c,student as s
+        where l.leaveuuid = sl.leaveuuid and l.courseid=c.courseid
+        and c.courseteacherno=#{teacherno} and sl.leavestate&amp;#{filter}=#{result}
+        and l.readstate=0 and sl.leavestuno = s.stuno
+        limit #{pageno},20
+    </select>
+    <select id="getLeaveTitle" resultType="com.fhh.final_project.entity.StuLeave">
+        select sl.leaveuuid,sl.leavebegintime,sl.leaveendtime,sl.leavereason,sl.leavestate,s.stuname from stu_leaves as sl,student as s
+        where s.stuno = sl.leavestuno and sl.leavestate&amp;#{filter}=#{result}
+        limit #{pageno},20
+    </select>
+    <select id="getWaitingTeacherNameByUuid" resultType="java.lang.String">
+        select distinct t.teaname
+        from leaves as l,stu_leaves as sl,courses as c,teacher as t
+        where sl.leaveuuid=#{leaveuuid} and sl.leaveuuid = l.leaveuuid
+        and l.courseid=c.courseid and c.courseteacherno = t.teano
+        and l.readstate = 0;
+    </select>
+    <select id="getSimilarLeaveCountByLeaveTypeAndStuno" resultType="java.lang.Integer">
+        select count(*)
+        from stu_leaves
+        where leavetype = #{leavetype} and leavestuno = #{leavestuno}
+        and leavestate&amp;129=0
+    </select>
+    <select id="getMostLeaveType" resultType="java.util.HashMap">
+        select leavetype,count(*) as count
+        from stu_leaves
+        group by leavetype
+        order by count desc
+        limit 0,1;
+    </select>
+    <update id="setResultByUuidAndCal">
+        update stu_leaves
+        set leavestate = leavestate|#{cal}
+        where leaveuuid= #{leaveuuid}
+    </update>
+    <update id="setTeacherReadStateByTeacherNoAndUuid">
+        update leaves as l,stu_leaves as sl,courses as c
+        set l.readstate  = 1
+        where sl.leaveuuid=#{leaveuuid} and sl.leaveuuid = l.leaveuuid
+        and sl.leavestate&amp;255=6 and l.courseid=c.courseid
+        and c.courseteacherno=#{teacherno};
+    </update>
+</mapper>

@@ -1,0 +1,82 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link type="text/css" rel="stylesheet" href="css/listleave.css">
+    <script src="scripts/listleave.js"></script>
+</head>
+    <body>
+        <div style="height:98%">
+            <div class="selstu">
+                <th:block th:each="m : ${leavetitles}">
+                    <div class="sublabel" onclick="loadDetail(this)" th:uuid="${m.leaveuuid}">
+                        <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}" th:switch="${m.checkstate()}">
+                            <!--0：提交，1：审核中，2：不通过，3：通过，4：归档，5：删除-->
+                            <div th:case="5" class="marker" style="background-color:#BCBCBC"></div>
+                            <div th:case="4" class="marker" style="background-color:#f97d12"></div>
+                            <div th:case="3" class="marker" style="background-color:#3ed785"></div>
+                            <div th:case="2" class="marker" style="background-color:#b82c29"></div>
+                            <div th:case="1" class="marker" style="background-color:#d9cb0e"></div>
+                            <div th:case="0" class="marker" style="background-color:#885874"></div>
+                        </th:block>
+                        <!--如果是辅导员，那么颜色的提示只需要显示“红点”(未读)。-->
+                        <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Instructor'}">
+                            <div class="marker" th:if="${!m.didInspectorRead()}" style="background-color:#b82c29"></div>
+                            <div class="marker" th:if="${m.didInspectorRead()}" style="background-color:rgba(0,0,0,0);border-color:rgba(0,0,0,0)"></div>
+                        </th:block>
+                        <!--如果是教师，那么同理。-->
+                        <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Teacher'}">
+                            <div class="marker" th:if="${!m.didTeacherRead()}" style="background-color:#b82c29"></div>
+                            <div class="marker" th:if="${m.didTeacherRead()}" style="background-color:rgba(0,0,0,0);border-color:rgba(0,0,0,0)"></div>
+                        </th:block>
+                        <!--教务处同理。-->
+                        <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Administration'}">
+                            <div class="marker" th:if="${!m.didAdministrationRead()}" style="background-color:#b82c29"></div>
+                            <div class="marker" th:if="${m.didAdministrationRead()}" style="background-color:rgba(0,0,0,0);border-color:rgba(0,0,0,0)"></div>
+                        </th:block>
+                        <!--如果是学生，那么只需要显示时间-->
+                        <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}" th:text="${m.leavebegintime}"/>
+                        <!--其他情况下，需要显示姓名-->
+                        <th:block th:if="${session.user.class.name != 'com.fhh.final_project.entity.Student'}" th:text="${m.leavename}+' '+${m.leavebegintime.substring(0,11)}"/>
+                    </div>
+                </th:block>
+                <div style="bottom: 2px;position: absolute;font-size: 12px;margin-left: calc(50% - 78px);user-select: none">
+                    <button th:if="${delete=='yes'}" style="width: 75px;height: 25px;margin-left: calc(50% - 35px);" id="clear" onclick="clear()">
+                        清空
+                    </button>
+                    <br th:if="${delete=='yes'}">
+                    <a style="cursor: default" onclick="changepage(-1)">上一页</a>
+                    &nbsp;第<span id="currpage"><th:block th:text="${currentpage}" /></span>页，共<span id="totalpage"><th:block th:text="${totalpage}" /></span>页&nbsp;
+                    <a style="cursor: default" onclick="changepage(1)">下一页</a>
+                </div>
+            </div>
+            <div class="detail">
+            </div>
+        </div>
+    </body>
+    <script>
+        $($(".selstu :first-child")[0]).css("margin-top","15px");
+        function changepage(i){
+            var curr=parseInt($("#currpage").html());
+            var total=parseInt($("#totalpage").html());
+            if(curr+i>0&&curr+i<=total){
+                loadWebURL("listleave?page="+(parseInt(curr)+parseInt(i)));
+            }
+            else
+                alert("不能翻页！");
+        }
+        if($("#clear").length!=0)
+            $("#clear").click(function i(){
+                if(window.confirm("您真的想要清空记录吗？")){
+                    $.post("cleardelete","",function(i){
+                        if(i!=0){
+                            alert("操作成功！");
+                            loadWebURL("listleave");
+                        }
+                        else{
+                            alert("操作失败！");
+                        }
+                    })
+                }
+            });
+    </script>
+</html>

@@ -1,0 +1,33 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml" ondragstart='return false;'>
+	<head>
+		<meta charset=utf-8>
+		<link type="text/css" rel="stylesheet" href="css/login.css">
+		<script type="text/javascript" src="scripts/login.js"></script>
+		<title>数据管理系统示例</title>
+	</head>
+	<body>
+		<div class=main>
+			<div class="login">
+				<div class="blur"></div>
+				<div class="content">
+					<p align="center" class="title">欢迎使用学生请假管理系统</p>
+					<div class="login-content">
+						<div class="logo"><img id="logo" src="imgs/username.png" height=120px></div>
+						<div class=input>
+							<form id="form1" action="check_login" method="post">
+								　编号：<input type="text" name="userno" style="width:130px"
+								onfocus="javascript:logo.src='imgs/username.png';">
+								<br><br>
+								　密码：<input type="password" name="userpassword" style="width:130px"
+								onfocus="javascript:logo.src='imgs/password.png';">
+								<br><br><br>
+								<input type="button" value="登录" style="margin-left:-10px;
+								height:30px;width:120px;" onclick="submit()">
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

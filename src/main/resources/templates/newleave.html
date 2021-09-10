@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/jHsDate.css" />
+    <style>
+        #startdate,#enddate,#reason,#type {
+            padding: 5px;
+            width: 200px;
+            border: 1px solid #3ab2d0;
+        }
+        #searchresult{
+            width:565px;
+            text-align:left;
+            background-color:rgba(144,208,255,0.4);
+            border:1px solid #5ea5da;
+            padding:5px;
+            font-size:14px;
+            margin:10px;
+            margin-left:calc(50% - 289px);
+        }
+    </style>
+    <script type="text/javascript" src="scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="scripts/jHsDate.js"></script>
+</head>
+<body>
+    <div style="display:flex;justify-content:center;align-items:center;position:relative;height:100%;flex-direction:column;">
+        <div style="text-align:center;margin-top:50px;">
+            <span>开始时间</span>
+            <input type="text" id="startdate" style="background-color:rgba(255,255,255,0.5)" readonly="true"/>
+            <span>结束时间</span>
+            <input type="text" id="enddate" style="background-color:rgba(255,255,255,0.5)" readonly="true"/>
+            <div id="searchresult" >　　您需要请假的课程名称将在这里显示。</div>
+            <div style="margin-bottom:5px">请假原因（100字内）</div>
+            <textarea id="reason" style="width:558px;height:141px;background-color:rgba(255,255,255,0.5)"></textarea>
+            <br />
+            <div>
+                <span>请假类型</span>
+                <select id="type" style="background-color:rgba(255,255,255,0.5);margin-right:50px;" readonly="true" name="type">
+                    <option value="0">事假</option>
+                    <option value="1">公假</option>
+                    <option value="2">病假</option>
+                    <option value="3">补假</option>
+                </select>
+                <button onclick="newleave()" style="margin-top:10px;width:100px;height:30px;margin-right: 20px;">确定</button>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    function checkdate(){
+        if($('#startdate').val()!=""&&$('#enddate').val()!=""){
+            if($("#enddate").val()<$("#startdate").val())
+                alert("错误：结束日期必须晚于开始日期！");
+            else{
+                var start = $('#startdate').val();
+                var end = $("#enddate").val();
+                var data = "beginyear="+start.slice(0,4)
+                        +"&beginmonth="+start.slice(5,7)
+                        +"&begindate="+start.slice(8,10)
+                        +"&beginhour="+start.slice(12,14)
+                        +"&beginminute="+start.slice(15,17)
+                        +"&endyear="+end.slice(0,4)
+                        +"&endmonth="+end.slice(5,7)
+                        +"&enddate="+end.slice(8,10)
+                        +"&endhour="+end.slice(12,14)
+                        +"&endminute="+end.slice(15,17)
+                        +"&stuno=" + $("#userno").html();
+                $.post("getcourse"+sessionString,data,function(i){
+                    var result="　　您需要请假的科目有：";
+                    $.each($.parseJSON(i),function(i,j) {
+                        result += j.name;
+                        result += "，";
+                    });
+                    result = result.slice(0,-1) + "。"
+                    $("#searchresult").html(result);
+                });
+            }
+        }
+    }
+    function newleave(){
+        if($('#startdate').val()!=""&&$('#enddate').val()!=""){
+            var start = $('#startdate').val();
+            var end = $("#enddate").val();
+            var data = "beginyear="+start.slice(0,4)
+                     +"&beginmonth="+start.slice(5,7)
+                     +"&begindate="+start.slice(8,10)
+                     +"&beginhour="+start.slice(12,14)
+                     +"&beginminute="+start.slice(15,17)
+                     +"&endyear="+end.slice(0,4)
+                     +"&endmonth="+end.slice(5,7)
+                     +"&enddate="+end.slice(8,10)
+                     +"&endhour="+end.slice(12,14)
+                     +"&endminute="+end.slice(15,17)
+                     +"&stuno=" + $("#userno").html()
+                     +"&leavereason="+$("#reason").val()
+                     +"&leavetype="+$("#type").val();
+            $.post("insertleave"+sessionString,data,function(i){
+                alert("成功提交了"+i+"条申请！");
+            });
+        }
+    }
+    $('#startdate').jHsDate({
+        format: 'yyyy年MM月dd日 hh时mm分',
+        maxDate: (new Date().getFullYear()+1)+'-12-31',
+        callBack: checkdate
+    });
+    $('#enddate').jHsDate({
+        format: 'yyyy年MM月dd日 hh时mm分',
+        maxDate: (new Date().getFullYear()+1)+'-12-31',
+        callBack: checkdate
+    });
+    </script>
+</body>
+</html>

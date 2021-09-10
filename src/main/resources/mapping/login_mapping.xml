@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fhh.final_project.mapper.LoginMapper">
+    <resultMap id="loginResultMap" type="com.fhh.final_project.entity.User">
+        <result column="userno" jdbcType="VARCHAR" property="userno"/>
+        <result column="privilege" jdbcType="VARCHAR" property="privilege"/>
+        <result column="lastlogin" jdbcType="VARCHAR" property="userlastlogin"/>
+    </resultMap>
+    <resultMap id="instructorResultMap" type="com.fhh.final_project.entity.Instructor">
+        <result column="insno" jdbcType="VARCHAR" property="userno"/>
+        <result column="insname" jdbcType="VARCHAR" property="username"/>
+        <result column="inssex" jdbcType="VARCHAR" property="sex"/>
+        <result column="inspro" jdbcType="VARCHAR" property="pro"/>
+        <result column="insage" jdbcType="VARCHAR" property="age"/>
+        <result column="insgrade" jdbcType="INTEGER" property="insGrade"/>
+        <result column="insinyear" jdbcType="VARCHAR" property="insInyear"/>
+        <result column="instel" jdbcType="VARCHAR" property="insTel"/>
+        <result column="lastlogin" jdbcType="VARCHAR" property="userlastlogin"/>
+    </resultMap>
+    <resultMap id="teacherResultMap" type="com.fhh.final_project.entity.Teacher">
+        <result column="teano" jdbcType="VARCHAR" property="userno"/>
+        <result column="teaname" jdbcType="VARCHAR" property="username"/>
+        <result column="teasex" jdbcType="VARCHAR" property="sex"/>
+        <result column="teapro" jdbcType="VARCHAR" property="pro"/>
+        <result column="teaage" jdbcType="INTEGER" property="age"/>
+        <result column="teainyear" jdbcType="VARCHAR" property="teaInyear"/>
+        <result column="teatel" jdbcType="VARCHAR" property="teaTel"/>
+        <result column="lastlogin" jdbcType="VARCHAR" property="userlastlogin"/>
+    </resultMap>
+    <resultMap id="studentResultMap" type="com.fhh.final_project.entity.Student">
+        <result column="stuno" jdbcType="VARCHAR" property="userno"/>
+        <result column="stuname" jdbcType="VARCHAR" property="username"/>
+        <result column="stusex" jdbcType="VARCHAR" property="sex"/>
+        <result column="stupro" jdbcType="VARCHAR" property="pro"/>
+        <result column="stuage" jdbcType="VARCHAR" property="age"/>
+        <result column="stuclass" jdbcType="VARCHAR" property="stuClass"/>
+        <result column="stugrade" jdbcType="INTEGER" property="stuGrade"/>
+        <result column="stuinstructor" jdbcType="VARCHAR" property="stuInstructor"/>
+        <result column="stutel" jdbcType="VARCHAR" property="stuTel"/>
+        <result column="lastlogin" jdbcType="VARCHAR" property="userlastlogin"/>
+    </resultMap>
+    <select id="checkLogin" parameterType="string"
+            resultType="com.fhh.final_project.entity.User">
+        select userno,privilege,date_format(lastlogin,'%Y-%m-%e %k:%i:%s') as lastlogin from login
+        where userno=#{userno} and userpassword = #{userpassword}
+    </select>
+    <select id="getStudent" resultType="com.fhh.final_project.entity.Student">
+        select s.stuno as stuno,s.stuname as stuname,s.stusex as stusex,
+        s.stupro as stupro,s.stuage as stuage,date_format(l.lastlogin,'%Y-%m-%e %k:%i:%s') as lastlogin,
+        s.stuclass as stuclass,s.stugrade as stugrade,
+        s.stuinstructor as stuinstructor,s.stutel as stutel
+        from student as s ,login as l
+        where s.stuno = #{userno} and s.stuno = l.userno
+    </select>
+    <!--String userno, String username, String sex, String pro, int age,String insInyear,String insGrade,String insTel-->
+    <select id="getInstructor" resultType="com.fhh.final_project.entity.Instructor">
+        select insno,insname,inssex,inspro,insage,insinyear,insgrade,instel as lastlogin
+        from instructor
+        where insno = #{userno}
+    </select>
+    <select id="getTeacher" resultType="com.fhh.final_project.entity.Teacher">
+        select teano,teaname,now(),teasex,teapro,teaage,teainyear,teatel as lastlogin
+        from teacher
+        where teano = #{userno}
+    </select>
+    <update id="flushLoginTime" parameterType="string">
+        update login set lastlogin = now() where userno = #{userno}
+    </update>
+    <update id="updatePassword" parameterType="string">
+        update login set userpassword = #{newpass}
+        where userno = #{userno} and userpassword=#{origpass}
+    </update>
+</mapper>

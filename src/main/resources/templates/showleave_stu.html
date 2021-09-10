@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link type="text/css" rel="stylesheet" href="/css/showleave.css">
+</head>
+    <body>
+        <div>
+            <div>
+                <table>
+                    <tr>
+                        <td style="width: 100px">请假UUID</td>
+                        <td id="uuid" style="width: 300px"><th:block th:text="${stuleave.leaveuuid}"/></td>
+                        <td style="width: 100px">请假类型</td>
+                        <td><th:block th:text="${stuleave.getReason()}"/></td>
+                    </tr>
+                    <tr>
+                        <td>请假开始时间</td>
+                        <td><th:block th:text="${stuleave.leavebegintime}"/></td>
+                        <td>请假结束时间</td>
+                        <td><th:block th:text="${stuleave.leaveendtime}"/></td>
+                    </tr>
+                    <tr>
+                        <td>影响课程</td>
+                        <td colspan="3"><th:block th:text="${coursestring}"/></td>
+                    </tr>
+                    <tr>
+                        <td>请假原因</td>
+                        <td colspan="3"><th:block th:text="${stuleave.leavereason}"/></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="steps" style="width:75%;margin-left:12.5%;">
+                <ul class="progressbar">
+                    <li style="width: 25%;" th:class="${stuleave.checkprogressstate(0)}">提交申请</li>
+                    <li style="width: 25%;" th:class="${stuleave.checkprogressstate(1)}">辅导员审核</li>
+                    <li style="width: 25%;" th:class="${stuleave.checkprogressstate(2)}">教务处审核</li>
+                    <li style="width: 25%;" th:class="${unreadteacherstring.length()==0&&stuleave.checkprogressstate(2).length()!=0?'active':''}" onclick="clicked()">教师查看</li>
+                </ul>
+            </div>
+            <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Instructor'}">
+            <div style="text-align:center;">
+                <button style="width: 75px;height: 25px;margin-right: 30px;" id="accept" onclick="setresult(2,1)">同意申请</button>
+                <button style="width: 75px;height: 25px;margin-right: 30px;" id="reject" onclick="setresult(2,0)">拒绝申请</button>
+                <button style="width: 75px;height: 25px;" id="archive" onclick="archive()">
+                    <th:block th:text="${stuleave.checkstate()==4?'取消归档':'归档'}"/>
+                </button>
+            </div>
+            </th:block>
+            <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Administration'}">
+                <div style="text-align:center;">
+                    <button style="width: 75px;height: 25px;margin-right: 30px;" id="accept" onclick="setresult(4,1)">同意申请</button>
+                    <button style="width: 75px;height: 25px;margin-right: 30px;" id="reject" onclick="setresult(4,0)">拒绝申请</button>
+                    <button style="width: 75px;height: 25px;" id="archive" onclick="archive()">
+                        <th:block th:text="${stuleave.checkstate()==4?'取消归档':'归档'}"/>
+                    </button>
+                </div>
+            </th:block>
+            <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}">
+            <div style="text-align:center;">
+                <button th:style="'width: 75px;height: 25px;margin-right: 30px;'+${stuleave.checkstate()==5||stuleave.checkstate()==0?'':'cursor:not-allowed'}" id="delete" onclick="remove()">
+                    <th:block th:text="${stuleave.checkstate()==5?'恢复记录':'删除记录'}"/>
+                </button>
+                <button style="width: 75px;height: 25px;margin-left: 30px;" id="archive" onclick="archive()">
+                    <th:block th:text="${stuleave.checkstate()==4?'取消归档':'归档'}"/>
+                </button>
+                <button th:if="${stuleave.checkstate()==5}" style="width: 75px;height: 25px;margin-left: 30px;" id="archive" onclick="delete_perm()">
+                    彻底删除
+                </button>
+            </div>
+            </th:block>
+        </div>
+        <div id="privilege" style="display: none">
+            <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}">1</th:block>
+            <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Instructor'}">2</th:block>
+            <th:block th:if="${session.user.class.name == 'com.fhh.final_project.entity.Administration'}">3</th:block>
+        </div>
+        <div id="unreadteacher" style="display: none">
+            <th:block th:text="${unreadteacherstring}" />
+        </div>
+        <div id="similarcount" style="display: none" th:if="${similarcount!=null}">
+            <th:block th:text="${similarcount}"/>
+        </div>
+        <script>
+            if($("#delete").css("cursor")=="not-allowed")
+                $("#delete").attr("disabled","disabled");
+            if($("#similarcount").length!=0){
+                if(parseInt($("#similarcount").html().trim())>10)
+                    alert("警告：此同学已以相同理由请假"+$("#similarcount").html().trim()+"次，请注意！");
+            }
+            if($(".progressbar :nth-child("+$("#privilege").html().trim()+")").attr("class") != undefined || $("#archive").html().trim()=="取消归档") {
+                //已经判定过的请假申请不需要再重新判定。
+                $("#accept").attr("disabled","disabled");
+                $("#reject").attr("disabled","disabled");
+            }
+            function clicked(){
+                var str = $("#unreadteacher").html().trim();
+                if(str=="")
+                    alert("所有老师均已阅读！")
+                else
+                    alert("以下老师还未阅读："+str);
+            }
+            function remove(){
+                if(window.confirm("您真的想要"+($("#delete").html().trim()=="删除记录"?"删除":"恢复")+"此记录吗？")){
+                    $.post("triggerdelete","leaveuuid="+$("#uuid").html(),function(i){
+                        if(i==1){
+                            alert("操作成功！");
+                            loadWebURL("listleave");
+                        }
+                        else{
+                            alert("操作失败！");
+                        }
+                    })
+                }
+
+            }
+            function delete_perm() {
+                if(window.confirm("您真的想要彻底删除此记录吗？")){
+                    $.post("triggerdelete_perm","leaveuuid="+$("#uuid").html(),function(i){
+                        if(i!=0){
+                            alert("操作成功！");
+                            loadWebURL("listleave");
+                        }
+                        else{
+                            alert("操作失败！");
+                        }
+                    })
+                }
+            }
+            function setresult(privilege,result) {
+                var data = "leaveuuid="+$("#uuid").html()+"&privilege="+privilege+"&result="+result;
+                $.post("setresult",data,function(i){
+                    if(i!=0) {
+                        alert("操作成功！");
+                        loadWebURL("listleave");
+                    }
+                    else
+                        alert("操作失败！")
+                })
+            }
+            function archive(){
+                if(window.confirm("您真的想要"+$("#archive").html().trim()+"此记录吗？")){
+                    $.post("triggerarchive","leaveuuid="+$("#uuid").html(),function(i){
+                        if(i==1){
+                            alert("操作成功！");
+                            loadWebURL("listleave");
+                        }
+                        else{
+                            alert("操作失败！");
+                        }
+                    })
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,60 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset=utf-8>
+    <link type="text/css" rel="stylesheet" href="/css/framework.css">
+    <script type="text/javascript" src="/scripts/framework.js"></script>
+    <script type="text/javascript" src="/scripts/jquery-3.4.1.min.js"></script>
+    <title>管理界面实例</title>
+    <style></style>
+</head>
+<body th:style="@{(${session.user.class.name == 'com.fhh.final_project.entity.Student'} ? 'background-image:url(/imgs/bg.jpg)' : 'background-image:url(/imgs/bg-admin.jpg)')}">
+<div class="total">
+    <!--增加一个隐藏的span，提醒用户还有多少数据等待处理-->
+    <span id="waitingcount" th:if="${session.waitingcount!=null}" style="display:none">
+        <th:block th:text="${session.waitingcount}" />
+    </span>
+    <div class="header">
+        <div class="blur" th:style="@{(${session.user.class.name == 'com.fhh.final_project.entity.Student'} ? 'background-image:url(/imgs/bg.jpg)' : 'background-image:url(/imgs/bg-admin.jpg)')}"></div>
+        <div class="content">
+            <p class="title">欢迎您，<a th:if="${session.user.class.name != 'com.fhh.final_project.entity.Administration'}" onclick="loadWebURL('userinfo')">
+                <th:block th:text="${session.user.username}"></th:block></a>
+                <span th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}">同学</span>
+                <span th:if="${session.user.class.name == 'com.fhh.final_project.entity.Instructor'}">辅导员</span>
+                <span th:if="${session.user.class.name == 'com.fhh.final_project.entity.Teacher'}">老师</span>
+                <span th:if="${session.user.class.name == 'com.fhh.final_project.entity.Administration'}">教务部门</span>
+                .</p>
+            <div id="userno" style="display: none"><th:block th:text="${session.user.userno}"></th:block></div>
+            <div class="date"><p id="date" style="margin-bottom:0px"></p></div>
+            <div class="exit"><a href="/logout">退出系统</a></div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="blur" th:style="@{(${session.user.class.name == 'com.fhh.final_project.entity.Student'} ? 'background-image:url(/imgs/bg.jpg)' : 'background-image:url(/imgs/bg-admin.jpg)')}"></div>
+        <div class="content-main">
+            <div class="left">
+                <div class="content">
+                    <tr th:each="m : ${session.actions}">
+                        <div class="label" th:onclick="loadWebURL([[${m.address}]])"><th:block th:text="${m.hint}"/></div>
+                    </tr>
+                </div>
+            </div>
+            <div class="right">
+                <div class="content">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(".left .content :first-child").css("margin-top","20px");
+    //在不兼容Session的浏览器上，添加JSESSIONID的支持。
+    sessionString = "";
+    if(window.location.pathname.indexOf(';')!=-1)
+        sessionString = window.location.pathname.substr(window.location.pathname.indexOf(';'));
+    //如果用户不是学生，则弹出对话框显示剩余待处理条数
+    if($("#waitingcount").length!=0)
+        alert("您还有"+$("#waitingcount").html().trim()+"条申请等待处理！");
+</script>
+</body>
+</html>

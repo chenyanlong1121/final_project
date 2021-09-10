@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style type="text/css">
+        table caption{font-size:22px;font-family:"SimHei"}
+    </style>
+    <script src="/scripts/alert.js"></script>
+    <script src="/scripts/userinfo.js"></script>
+</head>
+    <body>
+        <div style="display:flex;justify-content:center;align-items:center;position:relative;height:100%;flex-direction:column;">
+         <table width="500px" border="1" cellspacing="0">
+             <caption><th:block th:text="${session.user.username}"></th:block>的个人信息</caption>
+             <tbody>
+             <tr th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}" align="center">
+                 <td width="42.67px">姓名</td>
+                 <td width="60px">
+                     <th:block th:text="${session.user.username}"></th:block>
+                 </td>
+                 <td width="58.67px">年龄</td>
+                 <td width="59.33px">
+                     <th:block th:text="${session.user.age}"></th:block>
+                 </td>
+                 <td width="79.33px">班级</td>
+                 <td>
+                     <th:block th:text="${session.user.stuClass}"></th:block>
+                 </td>
+             </tr>
+             <tr th:if="${session.user.class.name == 'com.fhh.final_project.entity.Instructor'}" align="center">
+                 <td width="42.67px">姓名</td>
+                 <td width="60px">
+                     <th:block th:text="${session.user.username}"></th:block>
+                 </td>
+                 <td width="58.67px">年龄</td>
+                 <td width="59.33px">
+                     <th:block th:text="${session.user.age}"></th:block>
+                 </td>
+                 <td width="79.33px">电话</td>
+                 <td>
+                     <th:block th:text="${session.user.insTel}"></th:block>
+                 </td>
+             </tr>
+             <tr th:if="${session.user.class.name == 'com.fhh.final_project.entity.Teacher'}" align="center">
+                 <td width="42.67px">姓名</td>
+                 <td width="60px">
+                     <th:block th:text="${session.user.username}"></th:block>
+                 </td>
+                 <td width="58.67px">年龄</td>
+                 <td width="59.33px">
+                     <th:block th:text="${session.user.age}"></th:block>
+                 </td>
+                 <td width="79.33px">电话</td>
+                 <td>
+                     <th:block th:text="${session.user.teaTel}"></th:block>
+                 </td>
+             </tr>
+             <tr th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}" align="center">
+                 <td>电话</td>
+                 <td colspan="3">
+                     <th:block th:text="${session.user.stuTel}"></th:block>
+                 </td>
+                 <td>辅导员</td>
+                 <td colspan="3">
+                     <th:block th:text="${session.user.stuInstructor}"></th:block>
+                 </td>
+             </tr>
+             <tr th:if="${session.user.class.name == 'com.fhh.final_project.entity.Instructor'}" align="center">
+                 <td>工号</td>
+                 <td>
+                     <th:block th:text="${session.user.userno}"></th:block>
+                 </td>
+                 <td>入职</td>
+                 <td>
+                     <th:block th:text="${session.user.insInyear}"></th:block>
+                 </td>
+                 <td>上次登录</td>
+                 <td><th:block th:text="${session.user.userlastlogin}"></th:block></td>
+             </tr>
+             <tr th:if="${session.user.class.name == 'com.fhh.final_project.entity.Teacher'}" align="center">
+                 <td>工号</td>
+                 <td>
+                     <th:block th:text="${session.user.userno}"></th:block>
+                 </td>
+                 <td>入职</td>
+                 <td>
+                     <th:block th:text="${session.user.teaInyear}"></th:block>
+                 </td>
+                 <td>上次登录</td>
+                 <td><th:block th:text="${session.user.userlastlogin}"></th:block></td>
+             </tr>
+             <tr th:if="${session.user.class.name == 'com.fhh.final_project.entity.Student'}" align="center">
+                 <td>学号</td>
+                 <td colspan="3"><th:block th:text="${session.user.userno}"></th:block></td>
+                 <td>上次登录</td>
+                 <td><th:block th:text="${session.user.userlastlogin}"></th:block></td>
+             </tr>
+             <tr align="center" height="270px">
+                 <td>照片</td>
+                 <td colspan="3">
+                     <div style="text-align: center;"><img th:src="'/imgs/'+${session.user.userno}+'.jpg'" height="250px"></div>
+                 </td>
+                 <td>备注</td>
+                 <td colspan="3" align="left">暂时没有什么特殊备注。<br>No comments here at present.</td>
+             </tr>
+             </tbody>
+         </table>
+            <div>
+                <input type="button" value="更改密码" onclick="showpwdchangebox()" style="width:100px;height:25px;margin-top:10px;">
+            </div>
+        </div>
+    </body>
+</html>

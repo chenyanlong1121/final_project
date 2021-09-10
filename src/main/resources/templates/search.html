@@ -1,0 +1,113 @@
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+       <meta charset="UTF-8">
+    </head>
+    <body>
+        <style>
+            td{border:1px solid #000}
+            tr:hover{background-color:rgba(56,175,255,0.3);}
+            input,select{padding: 5px;width: 200px;border: 1px solid #3ab2d0;background-color: rgba(255,255,255,0.3);}
+            #total{display: flex;justify-content:center;align-items:center;position:relative;height:100%;flex-direction:column;}
+        </style>
+        <div id="total">
+            <div style="height: 400px;position: relative;">
+                <div>
+                    <span>请输入关键字：</span>
+                    <input id="value">
+                    <span>请选择分类：</span>
+                    <select id="method">
+                        <option value="leaveuuid">请假UUID</option>
+                        <option th:if="${session.user.class.name != 'com.fhh.final_project.entity.Student'}" value="stuno">请假学生编号</option>
+                        <option value="term">请假学期</option>
+                        <option value="begindate">请假开始日期</option>
+                        <option value="enddate">请假结束日期</option>
+                    </select>
+                    <button style="width: 75px;height: 25px;" onclick="dosearch(0)">查询</button>
+                </div>
+                <div id="result" style="display: none">
+                    <div style="margin-top: 20px;">
+                        <table id="listresult" style="border-collapse: collapse;TABLE-LAYOUT:fixed;WORD-BREAK:break-all;border:1px solid #000;">
+                            <tr>
+                                <td>请假UUID</td>
+                                <td>请假类型</td>
+                                <td>学生ID</td>
+                                <td>请假开始时间</td>
+                                <td>请假结束时间</td>
+                            </tr>
+                            <!--看起来一页12条是个不错的选择！-->
+                        </table>
+                    </div>
+                    <div style="position:absolute;bottom: 10px;height:1em;width: 100%;text-align: center">
+                        <a style="position: absolute;width: 3em;left: 3em;user-select: none;" onclick="dosearch(-1)">上一页</a>
+                        <span>第<span id="currpage">1</span>页，共<span id="totalpage">1</span>页</span>
+                        <a style="position: absolute;width: 3em;right: 3em;user-select: none;" onclick="dosearch(1)">下一页</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <script>
+        function dosearch(page) {
+            //首先，检查用户的输入是否合法(正则表达式真是个好东西)。
+            switch($("#method").val()){
+                case "leaveuuid":{
+                    if(!($("#value").val().match(/\w{8}(-\w{4}){3}-\w{12}/))) {
+                        alert("输入有误，请检查！");
+                        return;
+                    }
+                    break;
+                }
+                case"stuno":{
+                    if(!($("#value").val().match(/\d{9}/))) {
+                        alert("输入有误，请检查！");
+                        return;
+                    }
+                    break;
+                }
+                case"term":{
+                    if(!($("#value").val().match(/(\d{4}-){2}\d{1}/))) {
+                        alert("输入有误，请检查！");
+                        return;
+                    }
+                    break;
+                }
+                case"begindate":{
+                    if(!($("#value").val().match(/\d{4}(-\d{2}){2}/))) {
+                        alert("输入有误，请检查！");
+                        return;
+                    }
+                    break;
+                }
+                case"enddate":{
+                    if(!($("#value").val().match(/\d{4}(-\d{2}){2}/))) {
+                        alert("输入有误，请检查！");
+                        return;
+                    }
+                    break;
+                }
+            }
+            //然后，我们检查是否超出边界。
+            var curr=parseInt($("#currpage").html());
+            var total=parseInt($("#totalpage").html())
+            if(!(curr+page>0&&curr+page<=total)) {
+                alert("不能翻页！");
+                return;
+            }
+            //然后，拼接数据。
+            searchreq = "method="+$("#method").val()+"&value="+$("#value").val()+"&page="+(curr+page);
+            //最后，提交查询请求。
+            $.post("searchleave",searchreq,function(i){
+                var ret = $.parseJSON(i);
+                //取出总页面并更新
+                $("#totalpage").html(ret.pagecount);
+                var tabledata = "<tr><td style='width:275px'>请假UUID</td><td style='width:67px'>请假类型</td><td style='width:75px'>学生ID</td>\n<td style='width:139px'>请假开始时间</td>\n<td style='width:139px'>请假结束时间</td></tr>";
+                $.each(ret.leaves,function(i,j){
+                    tabledata += ("<tr><td>"+j.leaveuuid+"</td><td>"+j.reason+"</td><td>"+j.leavestuno+"</td>\n<td>"+j.leavebegintime+"</td>\n<td>"+j.leaveendtime+"</td></tr>");
+                })
+                $("#listresult").html(tabledata);
+                $("#result").css("display","");
+            });
+            $("#currpage").html(curr+page);
+        }
+    </script>
+    </body>
+</html>

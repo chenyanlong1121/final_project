@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fhh.final_project.mapper.CourseMapper">
+    <resultMap id="courseResultMap" type="com.fhh.final_project.entity.Course">
+        <!-- courseid| coursename| courseteacherno | courseclassroom  | coursestart | courselength | courseweekday | courseterm -->
+        <result column="courseno" jdbcType="VARCHAR" property="no"/>
+        <result column="coursename" jdbcType="VARCHAR" property="name"/>
+        <result column="courseteacherno" jdbcType="VARCHAR" property="teacherno"/>
+        <result column="courseclassroom" jdbcType="VARCHAR" property="classroom"/>
+        <result column="coursestart" jdbcType="INTEGER" property="start"/>
+        <result column="courselength" jdbcType="INTEGER" property="length"/>
+        <result column="courseweekday" jdbcType="INTEGER" property="weekday"/>
+        <result column="courseterm" jdbcType="VARCHAR" property="term"/>
+    </resultMap>
+    <!--String no, String name, String teacherno, String classroom, int start, int length, int weekday,String term-->
+    <select id="getCourses" parameterType="string"
+            resultType="com.fhh.final_project.entity.Course">
+        select c.* from courses as c,stu_courses as s
+        where s.stuno=#{stuno} and c.courseid = s.courseid
+          and (c.courseid like #{begintimestr} or #{endtimestr})
+    </select>
+</mapper>
